@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Círculo trigonométrico — Maximática</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#fff;color:#1a1a1a}
+@media(prefers-color-scheme:dark){body{background:#1a1a1a;color:#e8e8e8}}
+
+.wrap{padding:1rem;max-width:780px;margin:0 auto}
+
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:0.5px solid rgba(0,0,0,0.1)}
+@media(prefers-color-scheme:dark){.brand{border-color:rgba(255,255,255,0.1)}}
+.brand-name{font-size:15px;font-weight:600;color:#534AB7;letter-spacing:-0.01em}
+.brand-sub{font-size:11px;color:#888}
+
+.top-row{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}
+@media(max-width:640px){.top-row{grid-template-columns:1fr}}
+
+canvas#circ{display:block;width:100%;height:auto;cursor:crosshair;border-radius:10px;border:0.5px solid rgba(0,0,0,0.1)}
+@media(prefers-color-scheme:dark){canvas#circ{border-color:rgba(255,255,255,0.1)}}
+
+.panel-right{display:flex;flex-direction:column;gap:10px}
+
+.slider-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.slider-row label{font-size:12px;color:#666;white-space:nowrap}
+@media(prefers-color-scheme:dark){.slider-row label{color:#aaa}}
+.slider-row input[type=range]{flex:1;height:4px;accent-color:#534AB7}
+.slider-out{font-size:13px;font-weight:500;min-width:38px;text-align:right;font-family:monospace;color:#1a1a1a}
+@media(prefers-color-scheme:dark){.slider-out{color:#e8e8e8}}
+
+.angle-card{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:10px;padding:11px 13px}
+@media(prefers-color-scheme:dark){.angle-card{background:#242424;border-color:rgba(255,255,255,0.1)}}
+.angle-label{font-size:10px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
+.angle-vals{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.angle-big{font-size:20px;font-weight:600;font-family:monospace;color:#1a1a1a}
+@media(prefers-color-scheme:dark){.angle-big{color:#e8e8e8}}
+.angle-unit{font-size:12px;color:#888}
+.rad-val{font-size:13px;font-weight:600;color:#534AB7;font-family:monospace}
+
+.trig-grid{display:flex;flex-direction:column;gap:7px}
+.trig-card{border-radius:8px;padding:9px 11px;border:0.5px solid transparent}
+.trig-card.sen{background:#E1F5EE;border-color:#9FE1CB}
+.trig-card.cos{background:#E6F1FB;border-color:#B5D4F4}
+.trig-card.tan{background:#FAEEDA;border-color:#FAC775}
+.trig-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.trig-name{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+.trig-card.sen .trig-name{color:#085041}
+.trig-card.cos .trig-name{color:#0C447C}
+.trig-card.tan .trig-name{color:#633806}
+.trig-val{font-size:15px;font-weight:600;font-family:monospace}
+.trig-card.sen .trig-val{color:#0F6E56}
+.trig-card.cos .trig-val{color:#185FA5}
+.trig-card.tan .trig-val{color:#854F0B}
+.trig-formula{font-size:9.5px;color:#555;font-family:monospace;line-height:1.4}
+@media(prefers-color-scheme:dark){
+  .trig-card.sen{background:#0a2e24;border-color:#0F6E56}
+  .trig-card.cos{background:#0a1f3a;border-color:#185FA5}
+  .trig-card.tan{background:#2a1e08;border-color:#854F0B}
+  .trig-card.sen .trig-name{color:#5DCAA5}
+  .trig-card.cos .trig-name{color:#85B7EB}
+  .trig-card.tan .trig-name{color:#EF9F27}
+  .trig-card.sen .trig-val{color:#5DCAA5}
+  .trig-card.cos .trig-val{color:#85B7EB}
+  .trig-card.tan .trig-val{color:#EF9F27}
+  .trig-formula{color:#aaa}
+}
+
+.formula-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.formula-box{border-radius:8px;padding:8px 10px;text-align:center;border:0.5px solid transparent}
+.formula-box.sen{background:#E1F5EE;border-color:#9FE1CB}
+.formula-box.cos{background:#E6F1FB;border-color:#B5D4F4}
+.formula-box.tan{background:#FAEEDA;border-color:#FAC775}
+.formula-box .f-name{font-size:11px;font-weight:600;margin-bottom:5px}
+.formula-box.sen .f-name{color:#085041}
+.formula-box.cos .f-name{color:#0C447C}
+.formula-box.tan .f-name{color:#633806}
+.f-frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.2;font-family:monospace;font-size:9.5px}
+.f-num{border-bottom:1px solid #555;padding:0 3px;color:#1a1a1a}
+.f-den{padding:0 3px;color:#1a1a1a}
+.f-eq{font-size:10px;color:#555;margin-top:3px;font-family:monospace}
+@media(prefers-color-scheme:dark){
+  .formula-box.sen{background:#0a2e24;border-color:#0F6E56}
+  .formula-box.cos{background:#0a1f3a;border-color:#185FA5}
+  .formula-box.tan{background:#2a1e08;border-color:#854F0B}
+  .formula-box.sen .f-name{color:#5DCAA5}
+  .formula-box.cos .f-name{color:#85B7EB}
+  .formula-box.tan .f-name{color:#EF9F27}
+  .f-num,.f-den{color:#e8e8e8}
+  .f-eq{color:#aaa}
+}
+
+.table-wrap{margin-top:12px;border-radius:10px;border:0.5px solid rgba(0,0,0,0.1);overflow:hidden}
+@media(prefers-color-scheme:dark){.table-wrap{border-color:rgba(255,255,255,0.1)}}
+.table-title{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.05em;padding:8px 12px;background:rgba(0,0,0,0.03);border-bottom:0.5px solid rgba(0,0,0,0.08)}
+@media(prefers-color-scheme:dark){.table-title{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.08);color:#aaa}}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{padding:5px 8px;text-align:center;font-weight:600;border-bottom:0.5px solid rgba(0,0,0,0.1);color:#555;white-space:nowrap}
+@media(prefers-color-scheme:dark){th{border-color:rgba(255,255,255,0.1);color:#aaa}}
+td{padding:5px 8px;text-align:center;cursor:pointer;font-family:monospace;color:#1a1a1a;white-space:nowrap}
+@media(prefers-color-scheme:dark){td{color:#e8e8e8}}
+tr:hover td{background:rgba(83,74,183,0.06)}
+tr.active-row td{background:rgba(83,74,183,0.1);font-weight:600}
+.td-deg{color:#534AB7}
+.td-rad{color:#7F77DD}
+.td-sen{color:#0F6E56}
+.td-cos{color:#185FA5}
+.td-tan{color:#854F0B}
+@media(prefers-color-scheme:dark){
+  .td-deg{color:#AFA9EC}
+  .td-rad{color:#CECBF6}
+  .td-sen{color:#5DCAA5}
+  .td-cos{color:#85B7EB}
+  .td-tan{color:#EF9F27}
+}
+
+.cuad-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;justify-content:center}
+.cuad-pill{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500}
+.c1{background:#E1F5EE;color:#085041;border:0.5px solid #9FE1CB}
+.c2{background:#E6F1FB;color:#0C447C;border:0.5px solid #B5D4F4}
+.c3{background:#FAEEDA;color:#633806;border:0.5px solid #FAC775}
+.c4{background:#FAECE7;color:#712B13;border:0.5px solid #F5C4B3}
+@media(prefers-color-scheme:dark){
+  .c1{background:#0a2e24;color:#5DCAA5;border-color:#0F6E56}
+  .c2{background:#0a1f3a;color:#85B7EB;border-color:#185FA5}
+  .c3{background:#2a1e08;color:#EF9F27;border-color:#854F0B}
+  .c4{background:#3a120a;color:#F0997B;border-color:#993C1D}
+}
+
+.footer{margin-top:16px;padding-top:10px;border-top:0.5px solid rgba(0,0,0,0.08);font-size:10px;color:#aaa;text-align:center}
+@media(prefers-color-scheme:dark){.footer{border-color:rgba(255,255,255,0.08)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="brand">
+  <div>
+    <div class="brand-name">Maximática</div>
+    <div class="brand-sub">Círculo trigonométrico interactivo</div>
+  </div>
+</div>
+
+<div class="slider-row">
+  <label>Ángulo</label>
+  <input type="range" id="angSlider" min="0" max="360" step="1" value="45">
+  <span class="slider-out" id="sliderOut">45°</span>
+</div>
+
+<div class="top-row">
+  <canvas id="circ" width="420" height="420"></canvas>
+
+  <div class="panel-right">
+    <div class="angle-card">
+      <div class="angle-label">ángulo actual</div>
+      <div class="angle-vals">
+        <span class="angle-big" id="dispDeg">45</span><span class="angle-unit">°</span>
+        <span style="margin:0 5px;color:#ccc">=</span>
+        <span class="rad-val" id="dispRad">π/4</span>
+        <span class="angle-unit">rad</span>
+      </div>
+    </div>
+
+    <div class="trig-grid">
+      <div class="trig-card sen">
+        <div class="trig-top">
+          <span class="trig-name">seno</span>
+          <span class="trig-val" id="valSen">0.707</span>
+        </div>
+        <div class="trig-formula" id="fmlSen">cat. opuesto / hipotenusa</div>
+      </div>
+      <div class="trig-card cos">
+        <div class="trig-top">
+          <span class="trig-name">coseno</span>
+          <span class="trig-val" id="valCos">0.707</span>
+        </div>
+        <div class="trig-formula" id="fmlCos">cat. adyacente / hipotenusa</div>
+      </div>
+      <div class="trig-card tan">
+        <div class="trig-top">
+          <span class="trig-name">tangente</span>
+          <span class="trig-val" id="valTan">1.000</span>
+        </div>
+        <div class="trig-formula" id="fmlTan">cat. opuesto / cat. adyacente</div>
+      </div>
+    </div>
+
+    <div class="cuad-legend">
+      <span class="cuad-pill c1">I: sen+ cos+ tan+</span>
+      <span class="cuad-pill c2">II: sen+ cos− tan−</span>
+      <span class="cuad-pill c3">III: sen− cos− tan+</span>
+      <span class="cuad-pill c4">IV: sen− cos+ tan−</span>
+    </div>
+  </div>
+</div>
+
+<div class="formula-strip">
+  <div class="formula-box sen">
+    <div class="f-name">sen(α)</div>
+    <div style="margin:4px 0">
+      <span class="f-frac"><span class="f-num">opuesto</span><span class="f-den">hipotenusa</span></span>
+      <span class="f-eq">&nbsp;=&nbsp;</span>
+      <span class="f-frac"><span class="f-num">y</span><span class="f-den">r</span></span>
+      <span class="f-eq">&nbsp;= y</span>
+    </div>
+  </div>
+  <div class="formula-box cos">
+    <div class="f-name">cos(α)</div>
+    <div style="margin:4px 0">
+      <span class="f-frac"><span class="f-num">adyacente</span><span class="f-den">hipotenusa</span></span>
+      <span class="f-eq">&nbsp;=&nbsp;</span>
+      <span class="f-frac"><span class="f-num">x</span><span class="f-den">r</span></span>
+      <span class="f-eq">&nbsp;= x</span>
+    </div>
+  </div>
+  <div class="formula-box tan">
+    <div class="f-name">tan(α)</div>
+    <div style="margin:4px 0">
+      <span class="f-frac"><span class="f-num">opuesto</span><span class="f-den">adyacente</span></span>
+      <span class="f-eq">&nbsp;=&nbsp;</span>
+      <span class="f-frac"><span class="f-num">y</span><span class="f-den">x</span></span>
+      <span class="f-eq">&nbsp;=&nbsp;</span>
+      <span class="f-frac"><span class="f-num">sen</span><span class="f-den">cos</span></span>
+    </div>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <div class="table-title">Ángulos notables — clic para seleccionar</div>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th style="color:#534AB7">Grados</th>
+          <th style="color:#7F77DD">Radianes</th>
+          <th style="color:#0F6E56">sen</th>
+          <th style="color:#185FA5">cos</th>
+          <th style="color:#854F0B">tan</th>
+        </tr>
+      </thead>
+      <tbody id="angBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  Maximática · Trigonometría · Interactivo: arrastrá el slider, hacé clic en el círculo o seleccioná un ángulo de la tabla
+</div>
+
+</div>
+
+<script>
+const canvas = document.getElementById('circ');
+const ctx = canvas.getContext('2d');
+const slider = document.getElementById('angSlider');
+
+const C_SEN = '#0F6E56';
+const C_COS = '#185FA5';
+const C_TAN = '#854F0B';
+const C_HYP = '#534AB7';
+
+const NOTABLE = [
+  {deg:0,   rad:'0',       rnum:'0',           sr:'0',        cr:'1',        tr:'0'},
+  {deg:30,  rad:'π/6',     rnum:'π/6',         sr:'1/2',      cr:'√3/2',     tr:'1/√3'},
+  {deg:45,  rad:'π/4',     rnum:'π/4',         sr:'√2/2',     cr:'√2/2',     tr:'1'},
+  {deg:60,  rad:'π/3',     rnum:'π/3',         sr:'√3/2',     cr:'1/2',      tr:'√3'},
+  {deg:90,  rad:'π/2',     rnum:'π/2',         sr:'1',        cr:'0',        tr:'∞'},
+  {deg:120, rad:'2π/3',    rnum:'2π/3',        sr:'√3/2',     cr:'-1/2',     tr:'-√3'},
+  {deg:135, rad:'3π/4',    rnum:'3π/4',        sr:'√2/2',     cr:'-√2/2',    tr:'-1'},
+  {deg:150, rad:'5π/6',    rnum:'5π/6',        sr:'1/2',      cr:'-√3/2',    tr:'-1/√3'},
+  {deg:180, rad:'π',       rnum:'π',           sr:'0',        cr:'-1',       tr:'0'},
+  {deg:210, rad:'7π/6',    rnum:'7π/6',        sr:'-1/2',     cr:'-√3/2',    tr:'1/√3'},
+  {deg:225, rad:'5π/4',    rnum:'5π/4',        sr:'-√2/2',    cr:'-√2/2',    tr:'1'},
+  {deg:240, rad:'4π/3',    rnum:'4π/3',        sr:'-√3/2',    cr:'-1/2',     tr:'√3'},
+  {deg:270, rad:'3π/2',    rnum:'3π/2',        sr:'-1',       cr:'0',        tr:'∞'},
+  {deg:300, rad:'5π/3',    rnum:'5π/3',        sr:'-√3/2',    cr:'1/2',      tr:'-√3'},
+  {deg:315, rad:'7π/4',    rnum:'7π/4',        sr:'-√2/2',    cr:'√2/2',     tr:'-1'},
+  {deg:330, rad:'11π/6',   rnum:'11π/6',       sr:'-1/2',     cr:'√3/2',     tr:'-1/√3'},
+  {deg:360, rad:'2π',      rnum:'2π',          sr:'0',        cr:'1',        tr:'0'},
+];
+
+const RAD_MAP = {};
+NOTABLE.forEach(n=>RAD_MAP[n.deg]=n.rad);
+
+let angleDeg = 45;
+
+function isDark(){
+  return window.matchMedia('(prefers-color-scheme:dark)').matches;
+}
+
+function buildTable(){
+  const tbody = document.getElementById('angBody');
+  NOTABLE.forEach(n=>{
+    const tr = document.createElement('tr');
+    tr.dataset.deg = n.deg;
+    tr.innerHTML = `<td class="td-deg">${n.deg}°</td><td class="td-rad">${n.rad}</td><td class="td-sen">${n.sr}</td><td class="td-cos">${n.cr}</td><td class="td-tan">${n.tr}</td>`;
+    tr.addEventListener('click',()=>{ angleDeg=n.deg; slider.value=n.deg; draw(); });
+    tbody.appendChild(tr);
+  });
+}
+
+function highlightRow(){
+  document.querySelectorAll('#angBody tr').forEach(tr=>{
+    tr.classList.toggle('active-row', parseInt(tr.dataset.deg)===angleDeg);
+  });
+}
+
+function radLabel(deg){
+  return RAD_MAP[deg] || ((deg/180).toFixed(3)+' π');
+}
+
+function getQuadrant(deg){
+  const d = ((deg%360)+360)%360;
+  if(d<90) return 1;
+  if(d<180) return 2;
+  if(d<270) return 3;
+  return 4;
+}
+
+function draw(){
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const R = W * 0.355;
+  const a = angleDeg * Math.PI / 180;
+  const cosV = Math.cos(a);
+  const sinV = Math.sin(a);
+  const tanV = Math.tan(a);
+  const px = cx + R * cosV;
+  const py = cy - R * sinV;
+
+  const dark = isDark();
+  const gridCol   = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const axisCol   = dark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.18)';
+  const circCol   = dark ? 'rgba(255,255,255,0.2)'  : 'rgba(0,0,0,0.18)';
+  const textDim   = dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';
+  const textActive= dark ? '#AFA9EC' : '#534AB7';
+  const textRad   = dark ? 'rgba(175,169,236,0.55)' : 'rgba(83,74,183,0.55)';
+  const dotFill   = dark ? '#e8e8e8' : '#1a1a1a';
+  const sqCol     = dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)';
+
+  ctx.clearRect(0,0,W,H);
+
+  // cuadrante highlight
+  const q = getQuadrant(angleDeg);
+  const qColors = ['rgba(15,110,86,0.06)','rgba(24,95,165,0.06)','rgba(133,79,11,0.06)','rgba(153,60,29,0.06)'];
+  ctx.fillStyle = qColors[q-1];
+  ctx.beginPath();
+  ctx.moveTo(cx,cy);
+  const qa1 = (q-1)*Math.PI/2, qa2 = q*Math.PI/2;
+  ctx.arc(cx,cy,R,-qa1,-qa2,true);
+  ctx.closePath();
+  ctx.fill();
+
+  // grid
+  ctx.lineWidth=0.5; ctx.strokeStyle=gridCol;
+  [-1,-0.5,0.5,1].forEach(v=>{
+    ctx.beginPath(); ctx.moveTo(cx+v*R,cy-R*1.12); ctx.lineTo(cx+v*R,cy+R*1.12); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-R*1.12,cy+v*R); ctx.lineTo(cx+R*1.12,cy+v*R); ctx.stroke();
+  });
+
+  // ejes
+  ctx.lineWidth=1.2; ctx.strokeStyle=axisCol;
+  ctx.beginPath(); ctx.moveTo(cx-R*1.12,cy); ctx.lineTo(cx+R*1.12,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-R*1.12); ctx.lineTo(cx,cy+R*1.12); ctx.stroke();
+
+  // etiquetas ejes
+  ctx.fillStyle=textDim; ctx.font='bold 11px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('0 / 2π', cx+R*1.08, cy-12);
+  ctx.fillText('π', cx-R*1.08, cy-12);
+  ctx.fillText('π/2', cx+10, cy-R*1.08);
+  ctx.fillText('3π/2', cx+14, cy+R*1.08);
+  ctx.font='10px monospace';
+  ctx.fillText('1', cx+R+4, cy-12);
+  ctx.fillText('-1', cx-R-6, cy-12);
+  ctx.fillText('1', cx+8, cy-R);
+  ctx.fillText('-1', cx+8, cy+R);
+
+  // rayos punteados cada 30°
+  ctx.setLineDash([3,4]); ctx.lineWidth=0.6; ctx.strokeStyle=gridCol;
+  for(let d=30;d<360;d+=30){
+    const rd=d*Math.PI/180;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+R*1.08*Math.cos(-rd),cy+R*1.08*Math.sin(-rd)); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // círculo
+  ctx.lineWidth=1.8; ctx.strokeStyle=circCol;
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke();
+
+  // etiquetas de ángulos sobre el círculo (grados y radianes)
+  const showAngles = [0,30,45,60,90,120,135,150,180,210,225,240,270,300,315,330];
+  showAngles.forEach(d=>{
+    const rd = d * Math.PI / 180;
+    const isActive = (d === angleDeg);
+    const outerR = R + 14;
+    const innerR = R - 18;
+
+    // posición exterior (grados)
+    const ex = cx + outerR * Math.cos(-rd);
+    const ey = cy + outerR * Math.sin(-rd);
+    ctx.fillStyle = isActive ? textActive : textDim;
+    ctx.font = `${isActive?'bold ':''}10px system-ui,sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(d + '°', ex, ey);
+
+    // posición interior (radianes)
+    const rx2 = cx + innerR * Math.cos(-rd);
+    const ry2 = cy + innerR * Math.sin(-rd);
+    ctx.fillStyle = isActive ? textActive : textRad;
+    ctx.font = `${isActive?'bold ':''}9px monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const rLabel = NOTABLE.find(n=>n.deg===d)?.rad || '';
+    if(rLabel) ctx.fillText(rLabel, rx2, ry2);
+  });
+
+  // arco del ángulo α
+  ctx.lineWidth=1.5; ctx.strokeStyle=dark?'rgba(175,169,236,0.5)':'rgba(83,74,183,0.35)';
+  ctx.beginPath(); ctx.arc(cx,cy,R*0.17,0,-a,a>0); ctx.stroke();
+  ctx.fillStyle=textActive; ctx.font='bold 11px system-ui,sans-serif';
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  const arcLx=cx+(R*0.24)*Math.cos(-a/2);
+  const arcLy=cy+(R*0.24)*Math.sin(-a/2);
+  ctx.fillText('α',arcLx,arcLy);
+
+  // hipotenusa
+  ctx.lineWidth=2.5; ctx.strokeStyle=C_HYP;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.stroke();
+  ctx.fillStyle=C_HYP; ctx.font='500 10px system-ui,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const hmx=(cx+px)/2, hmy=(cy+py)/2;
+  const hdx=-(py-cy), hdy=(px-cx);
+  const hl=Math.sqrt(hdx*hdx+hdy*hdy)||1;
+  ctx.fillText('r = 1',hmx+hdx/hl*12,hmy+hdy/hl*12);
+
+  // pie (proyección en X)
+  const footX = cx + R * cosV;
+  ctx.lineWidth=3; ctx.strokeStyle=C_COS;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(footX,cy); ctx.stroke();
+  ctx.fillStyle=C_COS; ctx.font='500 11px system-ui,sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline = sinV >= 0 ? 'top' : 'bottom';
+  ctx.fillText('cos α',(cx+footX)/2, cy+(sinV>=0?5:-5));
+
+  // segmento seno
+  ctx.lineWidth=3; ctx.strokeStyle=C_SEN;
+  ctx.beginPath(); ctx.moveTo(footX,cy); ctx.lineTo(footX,py); ctx.stroke();
+  ctx.fillStyle=C_SEN; ctx.font='500 11px system-ui,sans-serif';
+  ctx.textAlign = cosV >= 0 ? 'left' : 'right';
+  ctx.textBaseline='middle';
+  ctx.fillText('sen α', footX+(cosV>=0?5:-5),(cy+py)/2);
+
+  // cuadrado ángulo recto
+  const sq=7;
+  ctx.strokeStyle=sqCol; ctx.lineWidth=0.8;
+  const sqX = cosV>=0 ? footX-sq : footX;
+  const sqY = sinV>=0 ? cy-sq : cy;
+  const sqW = cosV>=0 ? sq : -sq;
+  const sqH = sinV>=0 ? sq : -sq;
+  ctx.strokeRect(sqX, sqY, sqW, sqH);
+
+  // tangente
+  if(Math.abs(tanV)<12 && !isNaN(tanV)){
+    const tx = cx+R, ty = cy-R*tanV;
+    ctx.lineWidth=2.5; ctx.strokeStyle=C_TAN;
+    ctx.beginPath(); ctx.moveTo(cx+R,cy); ctx.lineTo(tx,ty); ctx.stroke();
+    ctx.fillStyle=C_TAN; ctx.font='500 11px system-ui,sans-serif';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText('tan α',cx+R+6,(cy+ty)/2);
+
+    // línea auxiliar
+    ctx.lineWidth=1; ctx.strokeStyle=dark?'rgba(133,79,11,0.35)':'rgba(133,79,11,0.25)';
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(tx,ty); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // punto en la circunferencia
+  ctx.fillStyle=dotFill; ctx.beginPath(); ctx.arc(px,py,6,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(px,py,3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=dark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.25)';
+  ctx.font='500 10px monospace'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+  const ptxt=`(${cosV.toFixed(2)}, ${sinV.toFixed(2)})`;
+  const ptx = cosV>=0?px+8:px-8-(ctx.measureText(ptxt).width);
+  const pty = sinV>=0?py-4:py+14;
+  ctx.fillText(ptxt, ptx, pty);
+
+  // actualizar UI
+  document.getElementById('sliderOut').textContent = angleDeg+'°';
+  document.getElementById('dispDeg').textContent = angleDeg;
+  document.getElementById('dispRad').textContent = radLabel(angleDeg);
+  document.getElementById('valSen').textContent = sinV.toFixed(3);
+  document.getElementById('valCos').textContent = cosV.toFixed(3);
+  document.getElementById('valTan').textContent = Math.abs(tanV)>99?'∞':tanV.toFixed(3);
+
+  document.getElementById('fmlSen').textContent =
+    `cat. opuesto / hipotenusa  =  ${(R*sinV).toFixed(1)} / ${R.toFixed(1)}`;
+  document.getElementById('fmlCos').textContent =
+    `cat. adyacente / hipotenusa  =  ${(R*cosV).toFixed(1)} / ${R.toFixed(1)}`;
+  document.getElementById('fmlTan').textContent = Math.abs(tanV)>99
+    ? 'no definida (división por cero)'
+    : `cat. opuesto / cat. adyacente  =  ${(R*sinV).toFixed(1)} / ${(R*cosV).toFixed(1)}`;
+
+  highlightRow();
+}
+
+slider.addEventListener('input',()=>{ angleDeg=parseInt(slider.value); draw(); });
+
+canvas.addEventListener('click',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
+  const mx=(e.clientX-rect.left)*scaleX;
+  const my=(e.clientY-rect.top)*scaleY;
+  const cx=canvas.width/2, cy=canvas.height/2;
+  let a=Math.atan2(-(my-cy),(mx-cx))*180/Math.PI;
+  if(a<0) a+=360;
+  angleDeg=Math.round(a); slider.value=angleDeg; draw();
+});
+
+buildTable();
+draw();
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',draw);
+</script>
+</body>
+</html>
